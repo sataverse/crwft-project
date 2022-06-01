@@ -2379,7 +2379,7 @@ import { element } from "svelte/internal";
                             }
                         }
                         fileContents[filesIndex] += '>';
-                        if(obj.tagType == 'textBox') {
+                        if(obj.tagType == 'i-text') {
                             fileContents[filesIndex] += obj.object.text.replace(",", "/ST47B2F5");
                         }
                         fileContents[filesIndex] += '<' + '/div' + '>\n';
@@ -2393,18 +2393,19 @@ import { element } from "svelte/internal";
                         fileContents[filesIndex] += "\t#" + obj.object.id + " {\n";
                         //넓이, 높이, 위치 좌표
                         fileContents[filesIndex] += '\t\tposition: absolute;\n';
-                        if(obj.tagType == 'text'){
+                        if(obj.tagType == 'i-text'){
                             fileContents[filesIndex] += '\t\twidth: '+Math.ceil(obj.object.width+10)+'px;\n';
                         } else {
                             fileContents[filesIndex] += '\t\twidth: '+Math.ceil(obj.object.width)+'px;\n';
                         }
                         fileContents[filesIndex] += '\t\theight: '+Math.ceil(obj.object.height)+'px;\n';
                         
+                        console.log(obj.object.left);
                         fileContents[filesIndex] += '\t\tleft: '+Math.ceil(comp.defaultObject.box.width/2 + obj.object.left)+'px;\n';
 
                         fileContents[filesIndex] += '\t\ttop: '+Math.ceil(comp.defaultObject.box.height/2 - 20 + obj.object.top)+'px;\n';
                         //배경색
-                        if(obj.tagType == 'rect'){
+                        if(obj.tagType != 'i-text'){
                             fileContents[filesIndex] += '\t\tbackground-color: '+obj.object.fill+';\n';
                         }
                         //테두리
@@ -2413,13 +2414,17 @@ import { element } from "svelte/internal";
                         }
                         
                         //폰트
-                        if(obj.tagType == 'textBox'){
+                        if(obj.tagType == 'i-text'){
                             fileContents[filesIndex] += '\t\tfont-size: '+obj.object.fontSize+'px;\n';
+                        } else if(obj.tagType == 'ellipse'){
+                            fileContents[filesIndex] += '\t\tborder-radius: 50%;\n';
                         }
                         fileContents[filesIndex] += '\t}\n';
                     }
                 });
-                fileContents[filesIndex] += '<'+'/style>\n';
+                //css 완성되면 넣기
+                //fileContents[filesIndex] += comp.css;
+                fileContents[filesIndex] += '\n<'+'/style>\n';
                 fileNames[filesIndex] = "component/"+ comp.path + ".svelte";
                 filesIndex+=1;
             }
@@ -2451,6 +2456,8 @@ import { element } from "svelte/internal";
                     if(sel.componentId != '//deleted//'){
                         fileContents[filesIndex] += "\t#" + sel.componentId + " {\n";
                         fileContents[filesIndex] += '\t\tposition: relative;\n';
+                        fileContents[filesIndex] += '\t\twidth: '+sel.width+'px;\n';
+                        fileContents[filesIndex] += '\t\theight: '+sel.height+'px;\n';
                         fileContents[filesIndex] += '\t\ttop: '+sel.y+'px;\n';
                         fileContents[filesIndex] += '\t\tleft: '+sel.x+'px;\n';
                         fileContents[filesIndex] += '\t}\n';
@@ -2512,7 +2519,7 @@ import { element } from "svelte/internal";
     }
 
     function requestData(isUpdated, todo) {
-        // 'downloadSvelte', 'downloadCompiled', 'showDemoPage'
+        // todo : 'downloadSvelte', 'downloadCompiled', 'showDemoPage'
         var userName = 'aneunne7';
         var projectName = 'defaultProject';
 
@@ -2534,9 +2541,12 @@ import { element } from "svelte/internal";
             formField1.value = projectName;
             form1.appendChild(formField1);
 
-            var newWin = window.open("about:blank", "Hosting");
-            form1.target = "Hosting";
+            if(todo == 'showDemoPage'){
+                var newWin = window.open("about:blank", "Hosting");
+                form1.target = "Hosting";
+            }
             form1.submit();
+
         } else {
             const form2 = document.createElement('form');
             form2.method = "post";
@@ -2579,8 +2589,10 @@ import { element } from "svelte/internal";
             formField5.value = todo;
             form2.appendChild(formField5);
 
-            var newWin = window.open("about:blank", "Hosting");
-            form2.target = "Hosting";
+            if(todo == 'showDemoPage'){
+                var newWin = window.open("about:blank", "Hosting");
+                form2.target = "Hosting";
+            }
             form2.submit();
         }
     }
@@ -3057,11 +3069,12 @@ import { element } from "svelte/internal";
             setZoomDefault();
         }}
         on:showPreview={()=>{
+            //서버 요청 부분
             createComponentFile();
             createPageFile();
             createRoutesFile();
             if(preFileContents.length == 0){
-                requestData(1, "downloadCompiled");
+                requestData(1, "downloadSvelte");
             } else {
                 requestData(checkUpdatedData(), "showDemoPage");
                 preFileContents = [];

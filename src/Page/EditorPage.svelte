@@ -2405,7 +2405,9 @@ import { element } from "svelte/internal";
 
                         fileContents[filesIndex] += '\t\ttop: '+Math.ceil(comp.defaultObject.box.height/2 - 20 + obj.object.top)+'px;\n';
                         //배경색
-                        if(obj.tagType != 'i-text'){
+                        if(obj.tagType == 'i-text'){
+                            fileContents[filesIndex] += '\t\tcolor: '+obj.object.fill+';\n';
+                        } else {
                             fileContents[filesIndex] += '\t\tbackground-color: '+obj.object.fill+';\n';
                         }
                         //테두리
@@ -3070,11 +3072,12 @@ import { element } from "svelte/internal";
         }}
         on:showPreview={()=>{
             //서버 요청 부분
+            console.log(ui.currentPageMode);
             createComponentFile();
             createPageFile();
             createRoutesFile();
             if(preFileContents.length == 0){
-                requestData(1, "downloadSvelte");
+                requestData(1, "showDemoPage");
             } else {
                 requestData(checkUpdatedData(), "showDemoPage");
                 preFileContents = [];

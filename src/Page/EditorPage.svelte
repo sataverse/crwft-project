@@ -2402,7 +2402,6 @@ import { element } from "svelte/internal";
                         
                         console.log(obj.object.left);
                         fileContents[filesIndex] += '\t\tleft: '+Math.ceil(comp.defaultObject.box.width/2 + obj.object.left)+'px;\n';
-
                         fileContents[filesIndex] += '\t\ttop: '+Math.ceil(comp.defaultObject.box.height/2 - 20 + obj.object.top)+'px;\n';
                         //배경색
                         if(obj.tagType == 'i-text'){
@@ -2418,21 +2417,20 @@ import { element } from "svelte/internal";
                         //폰트
                         if(obj.tagType == 'i-text'){
                             fileContents[filesIndex] += '\t\tfont-size: '+obj.object.fontSize+'px;\n';
+                            fileContents[filesIndex] += '\t\tline-height: '+obj.object.lineHeight+';\n';
                         } else if(obj.tagType == 'ellipse'){
                             fileContents[filesIndex] += '\t\tborder-radius: 50%;\n';
                         }
                         fileContents[filesIndex] += '\t}\n';
                     }
                 });
-                //css 완성되면 넣기
-                //fileContents[filesIndex] += comp.css;
+                if(comp.css != null) fileContents[filesIndex] += comp.css;
                 fileContents[filesIndex] += '\n<'+'/style>\n';
                 fileNames[filesIndex] = "component/"+ comp.path + ".svelte";
                 filesIndex+=1;
             }
         });
     }
-
     function createPageFile() {
         pageArray.forEach(page =>{
             fileContents[filesIndex] = '';
@@ -2471,12 +2469,10 @@ import { element } from "svelte/internal";
                 } else {
                     fileNames[filesIndex] = page.path.substr(1) + ".svelte";
                 }
-
                 filesIndex+=1;
             }
         });
     }
-
     function createRoutesFile() {
         //routes.js
         fileContents[filesIndex] = "";
@@ -2504,96 +2500,85 @@ import { element } from "svelte/internal";
         fileNames[filesIndex] = "routes.js";
         filesIndex += 1;
     }
-
     function checkUpdatedData() {
         if(fileNames.length != preFileNames.length) return 1;
         if(fileContents.length != preFileContents.length) return 1;
-
         for(var i=0;i<fileNames.length;i++){
             if(fileNames[i]!=preFileNames[i]) return 1;
         }
-
         for(var i=0;i<fileContents.length;i++){
             if(fileContents[i]!=preFileContents[i]) return 1;
         }
-
         return 0;
     }
-
     function requestData(isUpdated, todo) {
         // todo : 'downloadSvelte', 'downloadCompiled', 'showDemoPage'
         var userName = 'aneunne7';
         var projectName = 'defaultProject';
-
         if(isUpdated == 0){
             const form1 = document.createElement('form');
             form1.method = "post";
             form1.action = "http://118.67.133.164:8080/" + todo;
             document.body.appendChild(form1);
-
             const formField0 = document.createElement('input');
             formField0.type = 'hidden';
             formField0.name = 'userName';
             formField0.value = userName;
             form1.appendChild(formField0);
-
             const formField1 = document.createElement('input');
             formField1.type = 'hidden';
             formField1.name = 'projectName';
             formField1.value = projectName;
             form1.appendChild(formField1);
-
             if(todo == 'showDemoPage'){
-                var newWin = window.open("about:blank", "Hosting");
-                form1.target = "Hosting";
+                var newWin = window.open("about:blank", "DemoPage");
+                form1.target = "DemoPage";
+            } else {
+                var newWin = window.open("about:blank", "Download");
+                form1.target = "Download";
             }
             form1.submit();
-
         } else {
             const form2 = document.createElement('form');
             form2.method = "post";
             form2.action = "http://118.67.133.164:8080/compile";
             document.body.appendChild(form2);
-
             const formField0 = document.createElement('input');
             formField0.type = 'hidden';
             formField0.name = 'userName';
             formField0.value = userName;
             form2.appendChild(formField0);
-
             const formField1 = document.createElement('input');
             formField1.type = 'hidden';
             formField1.name = 'projectName';
             formField1.value = projectName;
             form2.appendChild(formField1);
-
             const formField2 = document.createElement('input');
             formField2.type = 'hidden';
             formField2.name = 'count';
             formField2.value = filesIndex;
             form2.appendChild(formField2);
-
             const formField3 = document.createElement('input');
             formField3.type = 'hidden';
             formField3.name = 'fileName';
             formField3.value = fileNames;
             form2.appendChild(formField3);
-
             const formField4 = document.createElement('input');
             formField4.type = 'hidden';
             formField4.name = 'contents';
             formField4.value = fileContents;
             form2.appendChild(formField4);
-
             const formField5 = document.createElement('input');
             formField5.type = 'hidden';
             formField5.name = 'todo';
             formField5.value = todo;
             form2.appendChild(formField5);
-
             if(todo == 'showDemoPage'){
-                var newWin = window.open("about:blank", "Hosting");
-                form2.target = "Hosting";
+                var newWin = window.open("about:blank", "DemoPage");
+                form2.target = "DemoPage";
+            } else {
+                var newWin = window.open("about:blank", "Download");
+                form2.target = "Download";
             }
             form2.submit();
         }
@@ -3077,7 +3062,7 @@ import { element } from "svelte/internal";
             createPageFile();
             createRoutesFile();
             if(preFileContents.length == 0){
-                requestData(1, "showDemoPage");
+                requestData(1, "downloadSvelte");
             } else {
                 requestData(checkUpdatedData(), "showDemoPage");
                 preFileContents = [];
